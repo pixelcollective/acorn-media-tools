@@ -1,0 +1,38 @@
+{
+  "name": "tiny-pixel/acorn-media-tools",
+  "type": "package",
+  "license": "MIT",
+  "description": "Import remote images using Acorn",
+  "authors": [
+    {
+      "name": "Kelly Mears",
+      "email": "kelly@tinypixel.dev"
+    }
+  ],
+  "keywords": [
+    "wordpress",
+    "acorn",
+    "sage",
+    "facebook",
+    "instagram",
+    "twitter"
+  ],
+  "support": {
+    "issues": "https://github.com/pixelcollective/acorn-media-tools/issues"
+  },
+  "autoload": {
+    "psr-4": {
+      "TinyPixel\\Acorn\\MediaTools\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.3"
+  },
+  "extra": {
+    "acorn": {
+      "providers": [
+        "TinyPixel\\Acorn\\MediaTools\\Providers\\MediaToolsServiceProvider"
+      ]
+    }
+  }
+}
