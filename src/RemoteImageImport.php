@@ -8,6 +8,7 @@ use function \wp_insert_attachment;
 use function \get_attached_file;
 use function \update_post_meta;
 use function \wp_update_post;
+use Roots\Acorn\Application;
 
 /**
  * This class handles downloading a remote image file and inserting it
