@@ -4,12 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f7889f93c94a48673c01c5b43c2a3ac",
-    "packages": [],
+    "content-hash": "714c76d451ed371b5a9513eb0f48a0b6",
+    "packages": [
+        {
+            "name": "tiny-pixel/support",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "../support",
+                "reference": "b71c439cf356ea6b0d0e14e429347845fc8a10c2"
+            },
+            "require": {
+                "php": ">=7.3"
+            },
+            "type": "package",
+            "autoload": {
+                "psr-4": {
+                    "TinyPixel\\Support\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kelly Mears",
+                    "email": "kelly@tinypixel.dev"
+                }
+            ],
+            "description": "Internal supports and utilities",
+            "keywords": [
+                "support",
+                "tiny-pixel",
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/pixelcollective/support/issues"
+            }
+        }
+    ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "tiny-pixel/support": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
