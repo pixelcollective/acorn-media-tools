@@ -17,7 +17,7 @@ app()->make('library.upload')->import($image, [
 
 ## Bug Reports
 
-Should you discover a bug in AcornMediaTools please [open an issue](https://github.com/pixelcollective/acorn-media-tools/issues).
+Should you discover a bug with the tools please [open an issue](https://github.com/pixelcollective/acorn-media-tools/issues).
 
 ## Contributing
 
@@ -27,4 +27,4 @@ All contributors absolutely must strictly adhere to our [Code of Conduct](https:
 
 ## License
 
-AcornMediaTools is provided under the [MIT License](https://github.com/pixelcollective/acorn-media-tools/blob/master/LICENSE.md).
+These tools are provided under the [MIT License](https://github.com/pixelcollective/acorn-media-tools/blob/master/LICENSE.md).
