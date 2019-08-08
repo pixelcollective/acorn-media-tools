@@ -1,21 +1,17 @@
-## acorn-media-tools
+# Acorn Media Library Tools
 
-Work-in-progress.
+## Service: library.upload
 
-Currently only includes one utility, which provides a simple API for uploading to the WordPress media library from site/plugin code.
-
-More to come.
-
-## Usage example
+Example usage:
 
 ```php
-$image = 'https://tinypixel.dev/app/uploads/2019/03/divider-tpc-large.png';
+$image = 'https://cdn.pixabay.com/photo/2018/07/31/22/08/lion-3576045__340.jpg';
 
-$this->app->make('tinypixel.media.remote')->import($image, [
-    'title'       => 'An image',
-    'caption'     => 'This image came from far away',
-    'altText'     => 'An image example',
-    'description' => 'Uploaded natch.',
+app()->make('library.upload')->import($image, [
+    'title'       => 'Title (optional)',
+    'caption'     => 'Caption (optional)',
+    'altText'     => 'Alt text (optional)',
+    'description' => 'Description (optional)',
 ])->download();
 ```
 
