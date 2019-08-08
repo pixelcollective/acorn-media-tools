@@ -22,16 +22,17 @@
   },
   "autoload": {
     "psr-4": {
-      "TinyPixel\\Acorn\\MediaTools\\": "src/"
+      "TinyPixel\\AcornMedia\\": "src/"
     }
   },
   "require": {
-    "php": ">=7.3"
+    "php": ">=7.3",
+    "tiny-pixel/support": "dev-master"
   },
   "extra": {
     "acorn": {
       "providers": [
-        "TinyPixel\\Acorn\\MediaTools\\Providers\\MediaToolsServiceProvider"
+        "TinyPixel\\Acorn\\Media\\Providers\\MediaToolsServiceProvider"
       ]
     }
   }

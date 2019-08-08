@@ -1,21 +1,36 @@
 <?php
 
-namespace TinyPixel\Acorn\MediaTools;
+namespace TinyPixel\Acorn\Media;
 
+use function \download_url;
+use function \is_wp_error;
+use function \wp_generate_attachment_metadata;
+use function \wp_handle_sideload;
 use function \wp_parse_url;
+use function \wp_update_attachment_metadata;
 use function \wp_upload_dir;
 use function \wp_insert_attachment;
 use function \get_attached_file;
 use function \update_post_meta;
 use function \wp_update_post;
+use function \sanitize_title_with_dashes;
 use Roots\Acorn\Application;
+use TinyPixel\Support\Services\MimeTypes;
 
 /**
- * This class handles downloading a remote image file and inserting it
- * into the WP Media Library.
+ * This class handles downloading a remote image file,
+ * verifying its compatibility and adding it to the
+ * WordPress media library using the WordPress API.
  *
- */
-class RemoteImage
+ * @author     Kelly Mears <kelly@tinypixel.dev>
+ * @license    MIT
+ * @version    1.0.0
+ * @since      1.0.0
+ *
+ * @package    Acorn\Media
+ * @subpackage RemoteImageImport
+ **/
+class RemoteImageImport
 {
     /**
      * Remote image URL.
@@ -44,38 +59,36 @@ class RemoteImage
     protected $attachmentId = false;
 
     /**
-     * Supported download types
-     *
-     * @var array
-     */
-    protected $supportedMimeTypes = [
-        'image/jpeg',
-        'image/gif',
-        'image/png',
-        'image/x-icon',
-    ];
-
-    /**
      * Constructor.
      *
      * @param  string $url The URL for the remote image.
-     * @param  array $attachment_data
+     * @param  array  $attachment_data
      */
     public function __construct(Application $app)
     {
-        $this->url = $this->formatUrl($url);
+        $this->app = $app;
+        $this->mimeTypes = MimeTypes::make();
+
+        return $this;
     }
 
     /**
      * Import
      *
-     * @return void
+     * @param string $url
+     * @param array  $attachmentData
+     *
+     * @return RemoteImageImport
      */
-    public function import(string $url, array $attachmentData = []) : void
+    public function import(string $url, array $attachmentData = []) : RemoteImageImport
     {
+        $this->url = $this->formatUrl($url);
+
         if (is_array($attachmentData) && $attachmentData) {
-            $this->attachmentData = array_map('sanitizeTextField', $attachmentData);
+            $this->attachmentData = array_map('sanitize_text_field', $attachmentData);
         }
+
+        return $this;
     }
 
     /**
@@ -103,7 +116,7 @@ class RemoteImage
      * @param  string $url The URL.
      * @return bool
      */
-    protected function hasValidSchemecheme($url)
+    protected function hasValidScheme($url)
     {
         return $this->doesStringStartWith($url, 'https://') ||
             $this->doesStringStartWith($url, 'http://');
@@ -162,7 +175,7 @@ class RemoteImage
      */
     protected function isUrlValid()
     {
-        $parsedUrl = \wp_parse_url($this->url);
+        $parsedUrl = wp_parse_url($this->url);
 
         return $this->hasValidScheme($this->url) && $parsedUrl && isset($parsedUrl['host']);
     }
@@ -172,6 +185,7 @@ class RemoteImage
      *
      * @uses   function \wp_handle_sideload
      * @uses   function \download_url
+     * @uses   function \is_wp_error
      * @see    wp-admin/includes/file.php
      *
      * @return array|bool Associative array of file attributes, or false on failure.
@@ -180,9 +194,9 @@ class RemoteImage
     {
         require_once ABSPATH . 'wp-admin/includes/file.php';
 
-        $tempFile = downloadUrl($this->url, 10);
+        $tempFile = download_url($this->url, 10);
 
-        if (hasWordPressError($tempFile)) {
+        if ( is_wp_error($tempFile)) {
             return false;
         }
 
@@ -193,11 +207,12 @@ class RemoteImage
         }
 
         $file = [
-            'name'    => $this->getFilename($mime_type),
-            'type'    => $mime_type,
+            'name'    => $this->getFilename($mimeType),
+            'type'    => $mimeType,
             'error'   => 0,
-            'size'    => filesize($temp_file),
-            'tmpName' => $temp_file,
+
+            'size'    => filesize($tempFile),
+            'tmpName' => $tempFile,
         ];
 
         $overrides = [
@@ -206,7 +221,7 @@ class RemoteImage
             'testUpload' => true,
         ];
 
-        $fileAttributes = \wp_handle_sideload($file, $overrides);
+        $fileAttributes = wp_handle_sideload($file, $overrides);
 
         if ($this->hasSideloadError($fileAttributes)) {
             return false;
@@ -216,23 +231,24 @@ class RemoteImage
     }
 
     /**
-     * Is this image MIME type supported by the WordPress Media Libarary?
+     * Is this image MIME type supported by the WordPress Media Library?
      *
-     * @param  string $mime_type The MIME type.
+     * @param string $fileType
      *
      * @return bool
      */
-    protected function isSupportedMimeType($mime_type)
+    protected function isSupportedFileType(string $fileType)
     {
-        return in_array($mimeType, $this->supportedTypes, true);
+        return in_array($fileType, $this->mimeTypes->wordPressCompatible()->toArray(), true);
     }
 
     /**
      * Get filename for attachment, including extension.
      *
-     * @param  string $mime_type The MIME type.
+     * @param string $mimeType
      *
      * @return string            The filename.
+     * @uses \sanitize_title_with_dashes
      */
     protected function getFilename(string $mimeType) : string
     {
@@ -240,7 +256,7 @@ class RemoteImage
             return basename($this->url);
         }
 
-        $filename  = sanitizeTitleWithDashes($this->attachmentData['title']);
+        $filename  = sanitize_title_with_dashes($this->attachmentData['title']);
         $extension = $this->getExtensionFromMimeType($mimeType);
 
         return $filename . $extension;
@@ -252,7 +268,7 @@ class RemoteImage
      * @param  string $mime_type The MIME type.
      * @return string The file extension or empty string if not found.
      */
-    protected function getExtensionFromMimeType($mimeType)
+    protected function getExtensionFromMimeType(string $mimeType)
     {
         $extensions = [
             'image/jpeg'   => '.jpg',
@@ -285,7 +301,7 @@ class RemoteImage
      */
     protected function insertAttachment($filePath, $mimeType)
     {
-        $uploadDir = \wp_upload_dir();
+        $uploadDir = wp_upload_dir();
 
         $attachmentData = array(
             'guid'           => $uploadDir['url'] . '/' . basename($filePath),
@@ -295,7 +311,7 @@ class RemoteImage
             'post_status'    => 'inherit',
         );
 
-        $attachmentId = \wp_insert_attachment($attachmentData, $filePath);
+        $attachmentId = wp_insert_attachment($attachmentData, $filePath);
 
         if (! $attachmentId) {
             return;
@@ -312,15 +328,16 @@ class RemoteImage
      */
     protected function updateMetadata()
     {
-        if (! $filePath = \get_attached_file($this->attachmentId)) {
+        if (! $filePath = get_attached_file($this->attachmentId)) {
             return;
         }
 
         require_once ABSPATH . 'wp-admin/includes/image.php';
 
         // Generate metadata for the attachment and update the database record.
-        $attachData = \wp_generate_attachment_metadata($this->attachmentId, $filePath);
-        \wp_update_attachment_metadata($this->attachmentId, $attachData);
+        $attachData = wp_generate_attachment_metadata($this->attachmentId, $filePath);
+
+        wp_update_attachment_metadata($this->attachmentId, $attachData);
     }
 
     /**
@@ -353,7 +370,7 @@ class RemoteImage
             $data['post_content'] = $this->attachmentData['description'];
         }
 
-        \wp_update_post($data);
+        wp_update_post($data);
     }
 
     /**
@@ -373,6 +390,6 @@ class RemoteImage
             ? $this->attachmentData['alt_text']
             : $this->attachmentData['title'];
 
-        \update_post_meta($this->attachmentId, '_wp_attachment_image_alt', $altText);
+        update_post_meta($this->attachmentId, '_wp_attachment_image_alt', $altText);
     }
 }
