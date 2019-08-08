@@ -7,6 +7,14 @@ use Roots\Acorn\ServiceProvider;
 use TinyPixel\Support\MimeTypes;
 use TinyPixel\Acorn\MediaTools\RemoteImageImport;
 
+/**
+ * Media tools service provider.
+ *
+ * @author     Kelly Mears <kelly@tinypixel.dev>
+ * @license    MIT
+ * @version    1.0.0
+ * @since      1.0.0
+ */
 class MediaToolsServiceProvider extends ServiceProvider
 {
     /**
